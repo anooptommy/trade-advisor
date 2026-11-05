@@ -1,0 +1,12 @@
+{
+  "quote_currency": "usd",
+  "daily_days": 180,
+  "hourly_days": 31,
+  "assets": [
+    {"symbol": "BTC", "coin_id": "bitcoin"},
+    {"symbol": "ETH", "coin_id": "ethereum"},
+    {"symbol": "SOL", "coin_id": "solana"},
+    {"symbol": "HYPE", "coin_id": "hyperliquid"},
+    {"symbol": "BNB", "coin_id": "binancecoin"}
+  ]
+}
