@@ -46,7 +46,18 @@ def assess_market(metrics: dict, previous_assessment: dict | None = None, *, cli
         context.load_default_certs()
         client = genai.Client(
             api_key=GEMINI_API_KEY,
-            http_options={"client_args": {"verify": context}},
+            http_options={
+                "client_args": {"verify": context},
+                # Bound SDK retries. It honors Retry-After when provided, but
+                # avoids a long retry loop for every asset in an hourly scan.
+                "retry_options": {
+                    "attempts": 1,
+                    "initial_delay": 1.0,
+                    "max_delay": 8.0,
+                    "exp_base": 2.0,
+                    "jitter": 0.5,
+                },
+            },
         )
     if model is None:
         from app.config import GEMINI_MODEL

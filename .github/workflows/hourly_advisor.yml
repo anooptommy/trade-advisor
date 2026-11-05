@@ -1,0 +1,35 @@
+name: Hourly crypto market advisor
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: hourly-advisor
+  cancel-in-progress: false
+
+jobs:
+  advisor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore advisor state
+        uses: actions/cache@v4
+        with:
+          path: data/
+          key: advisor-state-${{ github.run_id }}
+          restore-keys: advisor-state-
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run one advisor cycle
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m app.hourly_recommender --once

@@ -16,6 +16,8 @@ Gemini's numeric levels must be supported by the supplied metrics or marked unav
 
 The included GitHub Actions workflow runs once per UTC hour and restores the data directory through Actions cache. Cache retention is best-effort; persistent local storage is needed for a durable, long-term SQLite audit trail.
 
+Watchlist processing is sequential end-to-end per asset: fetch and derive metrics, load that asset's prior plan, call Gemini, persist the response, deliver Telegram, then move on. `GEMINI_REQUEST_DELAY_SECONDS` defaults to 30 seconds between attempted model calls; `GEMINI_RATE_LIMIT_COOLDOWN_SECONDS` defaults to 60 seconds after a Gemini 429. The SDK retry count is bounded and honors a server `Retry-After` header. Spacing can reduce burstiness but cannot bypass account/model quota.
+
 ## 1. Project objective
 
 Build a modular crypto market recommendation agent that can:

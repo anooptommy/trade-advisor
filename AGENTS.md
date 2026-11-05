@@ -6,6 +6,8 @@ This independent copy scans the configured crypto watchlist, passes every succes
 ## Architecture
 CoinGecko MCP → normalized UTC OHLC and cache → indicators → market structure/rule evidence → full snapshot → Gemini structured assessment and scenarios → append-only SQLite history → Telegram.
 
+Process watchlist assets end-to-end and sequentially: fetch/analyze one asset, load its prior plan, request Gemini, persist its response, deliver Telegram, then continue. Keep a configurable pause between Gemini requests and a longer cooldown after 429 responses. A delay does not bypass provider quota; honor Retry-After and keep SDK retry attempts bounded.
+
 Keep ingestion, indicators, structure/rules, Gemini, persistence, and delivery separate. Preserve sequential MCP requests, UTC metadata, complete-bucket resampling, and missing-input markers. Never fabricate market data.
 
 ## Gemini contract

@@ -12,12 +12,14 @@ from app.advisor_persistence import get_latest_advisor_assessment, persist_advis
 from app.agents.gemini import assess_market
 from app.logging_config import configure_logging
 from app.scan_persistence import begin_scan_run, mark_scan_run_failed, persist_scan_results
-from app.scanner import load_watchlist, scan_watchlist
+from app.scanner import COINGECKO_INTER_ASSET_DELAY_SECONDS, analyze_asset, load_watchlist
 from app.telegram import send_telegram_message
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env")
+GEMINI_REQUEST_DELAY_SECONDS = max(0.0, float(os.getenv("GEMINI_REQUEST_DELAY_SECONDS", "30")))
+GEMINI_RATE_LIMIT_COOLDOWN_SECONDS = max(0.0, float(os.getenv("GEMINI_RATE_LIMIT_COOLDOWN_SECONDS", "60")))
 
 
 def _metrics_payload(asset: dict) -> dict:
@@ -32,42 +34,84 @@ def _metrics_payload(asset: dict) -> dict:
 
 
 async def run_once(*, sender=send_telegram_message, advisor=assess_market) -> dict:
-    """Scan every asset and save/send one Gemini assessment per successful scan."""
+    """Process each asset end-to-end before moving to the next watchlist item."""
     if not os.getenv("TELEGRAM_BOT_TOKEN") or not os.getenv("TELEGRAM_CHAT_ID"):
         raise RuntimeError("Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in the environment.")
     config = load_watchlist()
     started_at = datetime.now(timezone.utc)
     scan_id = begin_scan_run(config, started_at=started_at)
+    results: list[dict] = []
+    analyzed = sent = failed = 0
+    statuses: dict[str, int] = {}
     try:
-        results = await scan_watchlist(config)
+        for index, watch_asset in enumerate(config["assets"]):
+            if index:
+                logger.info("Waiting %d seconds before next CoinGecko asset", COINGECKO_INTER_ASSET_DELAY_SECONDS)
+                await asyncio.sleep(COINGECKO_INTER_ASSET_DELAY_SECONDS)
+            logger.info("Starting sequential asset cycle symbol=%s coin_id=%s",
+                        watch_asset["symbol"], watch_asset["coin_id"])
+            try:
+                asset = await analyze_asset(
+                    watch_asset,
+                    quote_currency=config["quote_currency"],
+                    daily_days=config["daily_days"],
+                    hourly_days=config["hourly_days"],
+                )
+            except Exception as exc:
+                logger.exception("Asset scan failed symbol=%s coin_id=%s",
+                                 watch_asset["symbol"], watch_asset["coin_id"])
+                asset = {
+                    "symbol": f"{watch_asset['symbol']}/{config['quote_currency'].upper()}",
+                    "coin_id": watch_asset["coin_id"],
+                    "status": "failed",
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "qualifies_for_gemini": False,
+                }
+            results.append(asset)
+            if asset.get("status") != "analyzed":
+                failed += 1
+                continue
+
+            analyzed += 1
+            gemini_called = False
+            gemini_response_received = False
+            next_gemini_delay = GEMINI_REQUEST_DELAY_SECONDS
+            try:
+                metrics = _metrics_payload(asset)
+                previous = get_latest_advisor_assessment(asset["coin_id"])
+                logger.info("Calling Gemini after metrics and prior-plan lookup symbol=%s previous_plan=%s",
+                            asset["symbol"], bool(previous and previous.get("plan_active")))
+                gemini_called = True
+                assessment = attach_plan_identity(advisor(metrics, previous), previous)
+                gemini_response_received = True
+                history_id = persist_advisor_assessment(
+                    scan_id, asset["coin_id"], metrics=metrics,
+                    previous_assessment=previous, assessment=assessment,
+                )
+                message_id = await sender(format_advisor_message(asset, assessment))
+                sent += 1
+                statuses[assessment["status"]] = statuses.get(assessment["status"], 0) + 1
+                logger.info("Advisor update sent symbol=%s status=%s history_id=%s message_id=%s",
+                            asset.get("symbol"), assessment["status"], history_id, message_id)
+            except Exception as exc:
+                failed += 1
+                if gemini_called and not gemini_response_received and (
+                    "429" in str(exc) or "rate limit" in str(exc).lower()
+                ):
+                    next_gemini_delay = max(next_gemini_delay, GEMINI_RATE_LIMIT_COOLDOWN_SECONDS)
+                    logger.warning("Gemini rate limit observed symbol=%s; next asset cooldown=%.1fs",
+                                   asset.get("symbol"), next_gemini_delay)
+                logger.exception("Advisor update failed symbol=%s error_type=%s",
+                                 asset.get("symbol"), type(exc).__name__)
+            finally:
+                if gemini_called and index < len(config["assets"]) - 1 and next_gemini_delay:
+                    logger.info("Pausing %.1f seconds before next asset after Gemini request", next_gemini_delay)
+                    await asyncio.sleep(next_gemini_delay)
+
         persist_scan_results(scan_id, config, results)
     except Exception as exc:
         mark_scan_run_failed(scan_id, str(exc))
         raise
-    analyzed = sent = 0
-    failed = sum(result.get("status") != "analyzed" for result in results)
-    statuses: dict[str, int] = {}
-    for asset in results:
-        if asset.get("status") != "analyzed":
-            continue
-        analyzed += 1
-        try:
-            metrics = _metrics_payload(asset)
-            previous = get_latest_advisor_assessment(asset["coin_id"])
-            assessment = attach_plan_identity(advisor(metrics, previous), previous)
-            history_id = persist_advisor_assessment(
-                scan_id, asset["coin_id"], metrics=metrics,
-                previous_assessment=previous, assessment=assessment,
-            )
-            message_id = await sender(format_advisor_message(asset, assessment))
-            sent += 1
-            statuses[assessment["status"]] = statuses.get(assessment["status"], 0) + 1
-            logger.info("Advisor update sent symbol=%s status=%s history_id=%s message_id=%s",
-                        asset.get("symbol"), assessment["status"], history_id, message_id)
-        except Exception as exc:
-            failed += 1
-            logger.exception("Advisor update failed symbol=%s error_type=%s",
-                             asset.get("symbol"), type(exc).__name__)
     summary = {"scan_run_id": scan_id, "assets": len(results), "analyzed": analyzed,
                "failed": failed, "sent": sent, "plan_status_counts": statuses}
     logger.info("Hourly advisor run completed summary=%s", summary)
