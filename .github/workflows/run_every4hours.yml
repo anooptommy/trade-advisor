@@ -1,0 +1,37 @@
+name: Run Python Script every 4 hours
+
+on:
+  schedule:
+    # Runs at the start of every 4th hour
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
+        fi
+
+    - name: Create required folders and .env file
+      run: |
+        mkdir -p logs
+        echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+        echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
+        echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+        echo "GEMINI_MODEL=gemini-3.6-flash" >> .env
+
+    - name: Run script
+      run: python -m app.main
