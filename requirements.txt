@@ -1,10 +1,7 @@
-# Direct runtime dependencies for the trade_recommender app.
-# Pins reflect the versions installed and used by this project's VM environment.
+# Direct dependencies required by the hourly advisor runtime.
 certifi==2026.7.22
 google-genai==2.25.0
 httpx2==2.13.1
 mcp==2.2.0
 pandas==3.0.6
 python-dotenv==1.2.3
-matplotlib==3.10.8
-Pillow==12.0.0

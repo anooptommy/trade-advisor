@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json
 import logging
+import math
 import ssl
 
 logger = logging.getLogger(__name__)
@@ -20,9 +21,28 @@ ADVISOR_RESPONSE_SCHEMA = {
                 "trigger": {"type": "STRING"}, "action": {"type": "STRING"},
                 "entry_reference": {"type": "STRING"}, "stop_or_invalidation": {"type": "STRING"},
                 "target_reference": {"type": "STRING"}, "risk_reward": {"type": "STRING"},
+                "assumptions": {"type": "ARRAY", "minItems": 1, "items": {
+                    "type": "OBJECT", "properties": {
+                        "timeframe": {"type": "STRING", "enum": ["1d", "4h", "1h"]},
+                        "operator": {"type": "STRING", "enum": ["above", "below", "touches", "crosses_above", "crosses_below"]},
+                        "reference_price": {"type": "NUMBER"},
+                        "description": {"type": "STRING"},
+                    },
+                    "required": ["timeframe", "operator", "reference_price", "description"],
+                }},
+                "invalidation_conditions": {"type": "ARRAY", "items": {
+                    "type": "OBJECT", "properties": {
+                        "timeframe": {"type": "STRING", "enum": ["1d", "4h", "1h"]},
+                        "operator": {"type": "STRING", "enum": ["above", "below", "touches", "crosses_above", "crosses_below"]},
+                        "reference_price": {"type": "NUMBER"},
+                        "description": {"type": "STRING"},
+                    },
+                    "required": ["timeframe", "operator", "reference_price", "description"],
+                }},
             },
             "required": ["name", "direction", "trigger", "action", "entry_reference",
-                         "stop_or_invalidation", "target_reference", "risk_reward"],
+                         "stop_or_invalidation", "target_reference", "risk_reward", "assumptions",
+                         "invalidation_conditions"],
         }},
         "plan_invalidation": {"type": "STRING"}, "wait_conditions": {"type": "STRING"},
     },
@@ -85,6 +105,12 @@ def assess_market(metrics: dict, previous_assessment: dict | None = None, *, cli
         "earlier assessment exists but ended. With an active previous plan, choose "
         "actionable only if its trigger is met, wait if valid but untriggered, "
         "revise if assumptions failed or a different plan is justified, and no_plan if nothing is supported. "
+        "For each scenario include at least one machine-checkable assumption and zero or more invalidation_conditions. "
+        "Each condition must use an exact timeframe (1d/4h/1h), a closed-candle OHLC operator, a numeric reference_price "
+        "copied from supplied metrics (never invent one), and a concise description. Assumptions are conjunctive: all "
+        "must be met for that scenario to reach its execution threshold; alternative scenarios are independent. "
+        "Use only closed candles for conditions. Invalidation conditions describe observable price moves that mean the "
+        "scenario should be revised. If no supported numeric reference exists, say no_plan rather than inventing one. "
         "When status is no_plan, return an empty scenarios array. For wait/actionable restate the plan. "
         "For revise include replacement scenarios only when supported. "
         "Be concise and evidence-based."
@@ -98,8 +124,18 @@ def assess_market(metrics: dict, previous_assessment: dict | None = None, *, cli
             model=model, system_instruction=instruction, input=payload,
             response_format={"type": "text", "mime_type": "application/json",
                              "schema": ADVISOR_RESPONSE_SCHEMA},
+            generation_config={"thinking_level": "low"},
             store=False,
         )
+        usage = getattr(interaction, "usage", None)
+        if usage is not None:
+            logger.info(
+                "Gemini token usage symbol=%s model=%s input=%s output=%s thought=%s",
+                symbol, model,
+                getattr(usage, "total_input_tokens", None),
+                getattr(usage, "total_output_tokens", None),
+                getattr(usage, "total_thought_tokens", None),
+            )
         if not interaction.output_text:
             raise RuntimeError("Gemini returned an empty structured assessment.")
         result = json.loads(interaction.output_text)
@@ -128,12 +164,26 @@ def _validate_assessment(value: object) -> None:
         if not isinstance(value[field], str):
             raise ValueError(f"Gemini assessment field {field!r} must be text.")
     fields = {"name", "direction", "trigger", "action", "entry_reference",
-              "stop_or_invalidation", "target_reference", "risk_reward"}
+              "stop_or_invalidation", "target_reference", "risk_reward", "assumptions",
+              "invalidation_conditions"}
     for scenario in value["scenarios"]:
         if not isinstance(scenario, dict) or not fields.issubset(scenario):
             raise ValueError("Each Gemini scenario must include all required fields.")
         if scenario["direction"] not in {"long", "short", "stand_aside"}:
             raise ValueError("Gemini scenario direction is unsupported.")
+        if not isinstance(scenario["assumptions"], list) or not scenario["assumptions"]:
+            raise ValueError("Each trade-plan scenario needs machine-checkable assumptions.")
+        if not isinstance(scenario["invalidation_conditions"], list):
+            raise ValueError("Scenario invalidation_conditions must be a list.")
+        for condition in scenario["assumptions"] + scenario["invalidation_conditions"]:
+            if not isinstance(condition, dict) or not {"timeframe", "operator", "reference_price", "description"}.issubset(condition):
+                raise ValueError("Plan conditions need timeframe, operator, numeric reference_price, and description.")
+            if condition["timeframe"] not in {"1d", "4h", "1h"}:
+                raise ValueError("Plan condition timeframe is unsupported.")
+            if condition["operator"] not in {"above", "below", "touches", "crosses_above", "crosses_below"}:
+                raise ValueError("Plan condition operator is unsupported.")
+            if not isinstance(condition["reference_price"], (int, float)) or not math.isfinite(float(condition["reference_price"])):
+                raise ValueError("Plan condition reference_price must be finite numeric data.")
 
 
 def review_candidate(snapshot: dict, *, client=None, model: str | None = None) -> str:

@@ -41,124 +41,97 @@ def attach_plan_identity(assessment: dict, previous: dict | None) -> dict:
     result["assessed_at_utc"] = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     return result
 
-def format_advisor_message(asset: dict, assessment: dict) -> str:
-    """Render current context, plan scenarios, and the user's decision role."""
+
+def deterministic_watch_update(asset: dict) -> dict:
+    """Build a zero-Gemini watch note when no plan/candidate needs review."""
     snapshot = asset.get("snapshot") or {}
-    confidence = snapshot.get("confidence") or {}
-    fraction = confidence.get("score_fraction")
-    confidence_line = "Confidence score: unavailable"
-    if isinstance(fraction, (int, float)):
-        points = confidence.get("observed_points", confidence.get("score"))
-        total = confidence.get("assessed_points", confidence.get("score_out_of"))
-        coverage = confidence.get("coverage_pct")
-        confidence_line = f"Confidence score: {float(fraction) * 10:.1f}/10 (not a probability"
-        if points is not None and total is not None:
-            confidence_line += f"; {points}/{total} assessable points"
-        if coverage is not None:
-            confidence_line += f"; {coverage}% coverage"
-        confidence_line += ")"
-    status = assessment.get("status", "no_plan")
     context = snapshot.get("context") or {}
-    location = snapshot.get("htf_location") or context.get("location") or {}
-    quality = snapshot.get("level_quality") or context.get("level_quality") or {}
-    daily_trend = (snapshot.get("daily") or {}).get("trend", {}).get("trend", "unknown")
-    four_hour_trend = (snapshot.get("four_hour") or {}).get("trend", {}).get("trend", "unknown")
-    daily_structure = (snapshot.get("daily_structure") or {}).get("structure", "unknown")
-    four_hour_structure = (snapshot.get("four_hour_structure") or {}).get("structure", "unknown")
-    directional_side = context.get("daily_context")
-    proximity = location.get("proximity_by_side") or {}
-    nearest = proximity.get(directional_side, []) if directional_side in {"bullish", "bearish"} else []
-    if not nearest:
-        nearest = sorted(
-            proximity.get("bullish", []) + proximity.get("bearish", []),
-            key=lambda item: item.get("distance", float("inf")),
-        )
-    location_state = (
-        "not evaluated (no directional HTF context or completed 1H candle)"
-        if not location.get("available")
-        else "confirmed by the strict 1H interaction rule"
-        if location.get("confirmed")
-        else "not confirmed by the strict 1H interaction rule"
-    )
-    trend_detail = context.get("trend_alignment_detail") or {}
-    structure_detail = context.get("structure_alignment_detail") or {}
-    trend_alignment_text = (
-        "aligned" if trend_detail.get("aligned")
-        else "not aligned" if trend_detail.get("available")
-        else "not evaluated (one or both HTF trends are neutral/unknown)"
-    )
-    structure_alignment_text = (
-        "aligned" if structure_detail.get("aligned")
-        else "not aligned" if structure_detail.get("available")
-        else "not evaluated (no directional Daily bias)"
-    )
-    nearest_items = []
-    for item in nearest[:2]:
-        if "low" in item and "high" in item:
-            reference = f"{item['low']:g}–{item['high']:g}"
-        elif isinstance(item.get("price"), (int, float)):
-            reference = f"{item['price']:g}"
-        else:
-            continue
-        gap = f"{item['distance_pct']:.2f}% from close" if isinstance(item.get("distance_pct"), (int, float)) else "distance unavailable"
-        if isinstance(item.get("distance_atr"), (int, float)):
-            gap += f", {item['distance_atr']:.2f} ATR"
-        nearest_items.append(f"{item.get('timeframe')} {item.get('kind')} @ {reference} ({gap})")
-    nearest_text = ", ".join(nearest_items)
-    quality_rating = quality.get("rating")
-    quality_text = (
-        f"{quality_rating} ({quality.get('observed_points', 0)}/{quality.get('assessed_weight', 0)} assessed points; "
-        f"{quality.get('coverage_pct', 0)}% factor coverage)"
-        if quality.get("rating_available")
-        else f"not fully rated ({quality.get('observed_points', 0)}/{quality.get('assessed_weight', 0)} assessed points; "
-             f"{quality.get('coverage_pct', 0)}% factor coverage)"
-    )
+    location = snapshot.get("htf_location") or {}
+    entry = snapshot.get("entry_confirmation") or {}
+    blockers = []
+    trend_alignment = context.get("trend_alignment_detail") or {}
+    structure_alignment = context.get("structure_alignment_detail") or {}
+    if not trend_alignment.get("available"):
+        blockers.append("directional Daily and 4H trends")
+    elif not trend_alignment.get("aligned"):
+        blockers.append("Daily/4H trend alignment")
+    if not structure_alignment.get("available"):
+        blockers.append("a directional Daily bias")
+    elif not structure_alignment.get("aligned"):
+        blockers.append("matching Daily/4H swing structure")
+    if location.get("available") and not location.get("confirmed"):
+        blockers.append("a completed 1H interaction with the directional HTF area")
+    confirmations = entry.get("confirmations") or {}
+    confirmed_count = entry.get("confirmed_count", 0)
+    required_count = entry.get("required_count", 2)
+    if confirmed_count < required_count:
+        blockers.append(f"at least {required_count} closed-1H confirmations (currently {confirmed_count})")
+    wait = "Wait for " + "; ".join(blockers) + "." if blockers else "Wait for the next completed 1H candle and recheck the deterministic setup."
     market_data = snapshot.get("market_data") or {}
-    volume_line = (
-        "Volume: unavailable from CoinGecko OHLC; this is not a negative volume signal and is not a deterministic setup gate."
-        if market_data.get("volume_available") is False
-        else ""
-    )
-    risk = asset.get("risk_plan") or {}
+    gaps = []
+    if market_data.get("volume_available") is False:
+        gaps.append("volume unavailable from CoinGecko OHLC")
+    if asset.get("data_status") == "stale_cache_fallback":
+        gaps.append("market data is using stale cache")
+    return {
+        "status": "no_plan",
+        "market_situation": "No deterministic candidate setup is confirmed on this scan.",
+        "trend": "Daily/4H/1H conditions are shown on the attached chart.",
+        "bias": "See Daily and 4H trend/structure alignment on the chart.",
+        "momentum": "See 1H indicators on the chart.",
+        "key_levels": "See plotted HTF levels and nearest-level distances on the chart.",
+        "data_gaps": "; ".join(gaps),
+        "plan_thesis": "No Gemini plan requested for an unqualified setup with no active prior plan.",
+        "scenarios": [],
+        "plan_invalidation": "",
+        "wait_conditions": wait,
+    }
+
+def format_advisor_message(asset: dict, assessment: dict) -> str:
+    """Render a compact Telegram caption; the attached chart carries detail."""
+    snapshot = asset.get("snapshot") or {}
+    status = assessment.get("status", "no_plan")
+    price = snapshot.get("price")
+    price_text = f"${float(price):,.6g}" if isinstance(price, (int, float)) else "price unavailable"
+    timeframe_trends = []
+    for label, key in (("D", "daily"), ("4H", "four_hour"), ("1H", "one_hour")):
+        trend = ((snapshot.get(key) or {}).get("trend") or {}).get("trend")
+        timeframe_trends.append(f"{label} {trend or 'unknown'}")
+    short_status = STATUS_LABELS.get(status, status)
     lines = [
-        f"🧭 {asset.get('symbol', 'unknown')} — Market update",
-        f"As of {assessment.get('assessed_at_utc', 'unknown')}", "",
-        f"Situation: {assessment.get('market_situation', 'Unavailable')}",
-        f"Trend: {assessment.get('trend', 'Unavailable')}",
-        f"Bias: {assessment.get('bias', 'Unavailable')}",
-        f"Momentum: {assessment.get('momentum', 'Unavailable')}",
-        f"Key levels: {assessment.get('key_levels', 'Unavailable')}", confidence_line,
-        f"Data: {asset.get('data_status', 'unknown')}; {assessment.get('data_gaps', 'No additional data notes.')}",
-        f"Deterministic setup: {snapshot.get('setup', 'unknown')} (current confirmation only).",
-        f"HTF trend alignment: Daily {daily_trend}; 4H {four_hour_trend}; {trend_alignment_text}.",
-        f"HTF structure alignment: Daily {daily_structure}; 4H {four_hour_structure}; {structure_alignment_text}.",
-        f"HTF location: {location_state}" + (f"; nearest by close: {nearest_text}." if nearest_text else "."),
-        f"HTF level quality: {quality_text}.",
-        *([volume_line] if volume_line else []),
-        *([f"Candidate risk context: {risk.get('status')} ({risk.get('reason', 'see supplied candidate geometry')}); unavailable candidate geometry does not prevent a conditional watch scenario."] if risk else []),
-        "", f"Plan status: {STATUS_LABELS.get(status, status)}",
+        f"{asset.get('symbol', 'unknown')} · {short_status}",
+        f"{price_text}  |  {' · '.join(timeframe_trends)}  |  {snapshot.get('setup', 'unknown')}",
     ]
+    grade = setup_grade(snapshot)
+    if grade:
+        lines[1] += f" · Grade {grade}"
     if assessment.get("plan_id"):
-        lines.append(f"Plan: {assessment['plan_id'][:10]} · revision {assessment.get('plan_revision')}")
-    if assessment.get("plan_thesis"):
-        lines.append(f"Thesis: {assessment['plan_thesis']}")
-    for scenario in assessment.get("scenarios", []):
-        direction = scenario.get("direction", "stand_aside").replace("_", " ").upper()
-        lines.extend(["", f"{scenario.get('name', 'Scenario')} — {direction}",
-                      f"Trigger: {scenario.get('trigger', 'Unavailable')}",
-                      f"Response: {scenario.get('action', 'Unavailable')}",
-                      f"Entry reference: {scenario.get('entry_reference', 'unavailable')}",
-                      f"Stop / invalidation: {scenario.get('stop_or_invalidation', 'unavailable')}",
-                      f"Target reference: {scenario.get('target_reference', 'unavailable')}",
-                      f"R:R: {scenario.get('risk_reward', 'unavailable')}"])
-    if assessment.get("plan_invalidation"):
-        lines.extend(["", f"Plan invalidation: {assessment['plan_invalidation']}"])
-    if assessment.get("wait_conditions"):
-        lines.append(f"Wait for: {assessment['wait_conditions']}")
-    lines.extend(["", "Analysis only. You decide whether to trade; no order is placed and no position is managed."])
+        lines[0] += f"  ·  rev {assessment.get('plan_revision')}"
+    scenarios = assessment.get("scenarios") or []
+    if scenarios:
+        for scenario in scenarios[:2]:
+            direction = scenario.get("direction", "stand_aside").replace("_", " ").upper()
+            lines.append(f"Watch {direction}: {scenario.get('trigger', 'trigger unavailable')}")
+            invalidation = scenario.get("stop_or_invalidation")
+            if invalidation and invalidation.lower() != "unavailable":
+                lines.append(f"Invalidation: {invalidation}")
+    else:
+        watch = assessment.get("wait_conditions") or assessment.get("plan_thesis")
+        if watch:
+            lines.append(f"Watch: {watch}")
+    if assessment.get("data_gaps"):
+        lines.append(f"Data: {assessment['data_gaps']}")
+    lines.append("Analysis only · No order is placed.")
     message = "\n".join(lines)
-    if len(message) <= 3900:
-        return message
-    footer = lines[-1]
-    budget = 3900 - len(footer) - len("\n[Message shortened]\n\n")
-    return message[:budget].rsplit("\n", 1)[0] + "\n[Message shortened]\n\n" + footer
+    return message if len(message) <= 1000 else message[:997].rsplit("\n", 1)[0] + "…"
+
+
+def setup_grade(snapshot: dict) -> str | None:
+    """Map an existing candidate score to the requested display grade only."""
+    if snapshot.get("setup") not in {"potential_long", "potential_short"}:
+        return None
+    fraction = ((snapshot.get("confidence") or {}).get("score_fraction"))
+    if not isinstance(fraction, (int, float)):
+        return "UNRATED"
+    percent = float(fraction) * 100
+    return "A+" if percent >= 85 else "A" if percent >= 75 else "B+" if percent >= 65 else "B"
