@@ -1,36 +1,58 @@
 name: Run Python Script every 4 hours
 
+permissions:
+  contents: write
+
 on:
-  workflow_dispatch: # Legacy manual entry point; scheduled runs use hourly_advisor.yml
+  schedule:
+    # Runs at the start of every 4th hour
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub
+
+concurrency:
+  group: hourly-advisor
+  cancel-in-progress: false
 
 jobs:
-  run-script:
+  advisor:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: pip
-        cache-dependency-path: requirements.txt
-
-    - name: Install dependencies
-      run: |
-        if [ -f requirements.txt ]; then
-          pip install -r requirements.txt
-        fi
-
-    - name: Create required folders and .env file
-      run: |
-        mkdir -p logs
-        echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
-        echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
-        echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
-        echo "GEMINI_MODEL=gemini-3.6-flash" >> .env
-
-    - name: Run script
-      run: python -m app.main
+      - name: Checkout project
+        id: checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-visualization.txt
+      - name: Restore advisor state
+        uses: actions/cache@v4
+        with:
+          path: data/
+          key: advisor-state-${{ github.run_id }}
+          restore-keys: advisor-state-
+      - name: Install dependencies
+        run: python -m pip install -r requirements-visualization.txt
+      - name: Run one advisor cycle
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m app.hourly_recommender --once
+      - name: Commit updated plan state
+        if: always() && steps.checkout.outcome == 'success'
+        run: |
+          if [ ! -f runtime/trade_plans.json ]; then
+            echo "No plan-state file to commit."
+            exit 0
+          fi
+          git add runtime/trade_plans.json
+          if git diff --cached --quiet; then
+            echo "No plan-state changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update conditional trading plans"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
