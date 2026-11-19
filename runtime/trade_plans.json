@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "last_daily_summary_date": "2026-11-19",
+  "last_daily_summary_date": "2026-11-20",
   "assets": {
     "bitcoin": {
       "symbol": "BTC",
@@ -30,54 +30,417 @@
             ],
             "reason": "closed_candle_conditions_and_deterministic_setup"
           }
+        },
+        {
+          "at_utc": "2026-11-19T22:57:37Z",
+          "event": "plan_revised",
+          "status": "revise",
+          "plan_revision": 2,
+          "details": {
+            "history_id": 2
+          }
         }
       ],
       "plan": {
         "status": "wait",
-        "market_situation": "BTC/USD is trading at 64,519.0. Daily, 4H, and 1H trends and market structures are aligned bearish. Price is interacting with the 1D supply zone (64,709.37 - 66,016.63). Entry rejection confirmation is present, but immediate entry at current market price yields an unviable R:R below 1.5R.",
-        "trend": "Daily, 4H, and 1H trends are fully aligned bearish with bearish EMA alignment across all evaluated timeframes.",
+        "market_situation": "BTC/USD has traded down to 62,064.0, directly entering the 1D demand zone (61,618.59 - 63,150.25) and 4H demand zone (61,447.32 - 62,701.81) without triggering the previous supply retest at 65,363.0. The prior short plan target has been reached, invalidating the previous wait setup. Daily, 4H, and 1H trends and structures remain confirmed bearish, but price is now sitting directly inside HTF demand zones.",
+        "trend": "Bearish across Daily, 4H, and 1H timeframes, supported by lower-high/lower-low structures and EMA alignments below the SMA50 on all three horizons.",
         "bias": "Bearish.",
-        "momentum": "Bearish on Daily (RSI 24.7) and 4H (RSI 28.53); 1H RSI is 42.5 with a positive 1H MACD histogram (99.96).",
-        "key_levels": "Resistance: 1D supply zone (64,709.37 - 66,016.63), 1D resistance (65,363.0), 4H EMA9 (65,688.63). Support: 1D demand zone (61,618.59 - 63,150.25), 1D support (62,383.0).",
-        "data_gaps": "Volume data is unavailable across all timeframes (1D, 4H, 1H). Level quality rating is unrated due to missing fresh_zone evaluation.",
-        "plan_thesis": "Align with the HTF bearish trend by monitoring for a deeper pullback into 1D supply (near 65,363.0) to establish a short watch setup with R:R exceeding 1.5R targeting 1D demand (63,150.25).",
+        "momentum": "Daily momentum is deeply oversold (RSI 24.09, MACD histogram -1046.74). 4H momentum is bearish (RSI 37.85). 1H momentum is bearish (RSI 32.5, MACD histogram -135.99).",
+        "key_levels": "Resistance: 4H EMA9 at 63,398.82, 4H EMA21 at 64,108.76, 1D supply zone (64,709.37 - 66,016.63). Support: 4H support at 62,074.50, 1D demand zone (61,618.59 - 63,150.25), 4H demand zone (61,447.32 - 62,701.81), lower 1D support at 59,155.0.",
+        "data_gaps": "Volume data is unavailable across all timeframes. Level quality is unrated with 0 points observed.",
+        "plan_thesis": "Given that price collapsed directly into HTF demand zones without offering a retracement entry, the prior plan is revised. We maintain a bearish watch bias, monitoring for either a breakdown below HTF demand (61,447.32) to target 59,155.0, or a corrective bounce toward dynamic resistance at the 4H EMA9 (63,398.82) before re-evaluating shorts.",
         "scenarios": [
           {
-            "name": "Conditional Supply Retest Short",
+            "name": "Demand Breakdown Continuation Short",
             "direction": "short",
-            "trigger": "1H candle retraces to 1D resistance at 65,363.0 and prints a bearish rejection candle",
-            "action": "Watch for short execution if R:R exceeds 1.5R hard floor",
-            "entry_reference": "65363.0",
-            "stop_or_invalidation": "66016.63",
-            "target_reference": "63150.25",
-            "risk_reward": "3.33"
+            "trigger": "Closed 1H candle below 4H demand low at 61,447.32 confirming breakdown",
+            "action": "Watch for breakdown continuation short targeting the next daily support",
+            "entry_reference": "61447.32",
+            "stop_or_invalidation": "62701.81",
+            "target_reference": "59155.0",
+            "risk_reward": "1.83",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "below",
+                "reference_price": 61447.32,
+                "description": "1H candle closes below 4H demand zone low of 61,447.32"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "1h",
+                "operator": "above",
+                "reference_price": 62701.81,
+                "description": "1H candle closes back above 4H demand zone high at 62,701.81"
+              }
+            ]
           },
           {
-            "name": "Supply Zone Invalidation Stand Aside",
-            "direction": "stand_aside",
-            "trigger": "1H candle closes above 1D supply high at 66,016.63",
-            "action": "Invalidate short plan thesis and stand aside",
-            "entry_reference": "66016.63",
-            "stop_or_invalidation": "66016.63",
-            "target_reference": "Unavailable",
-            "risk_reward": "Unavailable"
+            "name": "Dynamic Resistance Retest Short",
+            "direction": "short",
+            "trigger": "Closed 1H candle crosses above then closes below 4H EMA9 at 63,398.82",
+            "action": "Watch for rejection short near dynamic resistance",
+            "entry_reference": "63398.82",
+            "stop_or_invalidation": "64108.76",
+            "target_reference": "62074.5",
+            "risk_reward": "1.87",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "crosses_below",
+                "reference_price": 63398.82,
+                "description": "1H candle tests and closes below 4H EMA9 at 63,398.82"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "4h",
+                "operator": "above",
+                "reference_price": 64108.76,
+                "description": "4H candle closes above 4H EMA21 at 64,108.76"
+              }
+            ]
           }
         ],
-        "plan_invalidation": "A 1H close above 66,016.63 (1D supply zone high) or a breakdown below 63,150.25 before retesting supply invalidates the setup.",
-        "wait_conditions": "Wait for price to retest 65,363.0 inside 1D supply for acceptable R:R, or for a clean lower timeframe trigger.",
+        "plan_invalidation": "A closed 4H candle above 4H EMA21 (64,108.76) or a 1D close above 65,363.0 invalidates the short continuation structure.",
+        "wait_conditions": "Wait for either a confirmed 1H close below 61,447.32 to confirm a demand breakdown, or a corrective pullback into 4H EMA9 (63,398.82).",
         "plan_id": "5947b4e9a8ae41cc9890c8610a416a16",
-        "plan_revision": 1,
+        "plan_revision": 2,
         "plan_active": true,
-        "assessed_at_utc": "2026-11-15T19:00:58Z",
-        "history_id": 10
+        "assessed_at_utc": "2026-11-19T22:57:37Z"
       },
       "assumption_state": "waiting",
-      "actionable_notified": false
+      "actionable_notified": false,
+      "plan_history": [
+        {
+          "at_utc": "2026-11-19T22:57:37Z",
+          "event": "plan_revised",
+          "assessment": {
+            "status": "revise",
+            "market_situation": "BTC/USD has traded down to 62,064.0, directly entering the 1D demand zone (61,618.59 - 63,150.25) and 4H demand zone (61,447.32 - 62,701.81) without triggering the previous supply retest at 65,363.0. The prior short plan target has been reached, invalidating the previous wait setup. Daily, 4H, and 1H trends and structures remain confirmed bearish, but price is now sitting directly inside HTF demand zones.",
+            "trend": "Bearish across Daily, 4H, and 1H timeframes, supported by lower-high/lower-low structures and EMA alignments below the SMA50 on all three horizons.",
+            "bias": "Bearish.",
+            "momentum": "Daily momentum is deeply oversold (RSI 24.09, MACD histogram -1046.74). 4H momentum is bearish (RSI 37.85). 1H momentum is bearish (RSI 32.5, MACD histogram -135.99).",
+            "key_levels": "Resistance: 4H EMA9 at 63,398.82, 4H EMA21 at 64,108.76, 1D supply zone (64,709.37 - 66,016.63). Support: 4H support at 62,074.50, 1D demand zone (61,618.59 - 63,150.25), 4H demand zone (61,447.32 - 62,701.81), lower 1D support at 59,155.0.",
+            "data_gaps": "Volume data is unavailable across all timeframes. Level quality is unrated with 0 points observed.",
+            "plan_thesis": "Given that price collapsed directly into HTF demand zones without offering a retracement entry, the prior plan is revised. We maintain a bearish watch bias, monitoring for either a breakdown below HTF demand (61,447.32) to target 59,155.0, or a corrective bounce toward dynamic resistance at the 4H EMA9 (63,398.82) before re-evaluating shorts.",
+            "scenarios": [
+              {
+                "name": "Demand Breakdown Continuation Short",
+                "direction": "short",
+                "trigger": "Closed 1H candle below 4H demand low at 61,447.32 confirming breakdown",
+                "action": "Watch for breakdown continuation short targeting the next daily support",
+                "entry_reference": "61447.32",
+                "stop_or_invalidation": "62701.81",
+                "target_reference": "59155.0",
+                "risk_reward": "1.83",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "below",
+                    "reference_price": 61447.32,
+                    "description": "1H candle closes below 4H demand zone low of 61,447.32"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 62701.81,
+                    "description": "1H candle closes back above 4H demand zone high at 62,701.81"
+                  }
+                ]
+              },
+              {
+                "name": "Dynamic Resistance Retest Short",
+                "direction": "short",
+                "trigger": "Closed 1H candle crosses above then closes below 4H EMA9 at 63,398.82",
+                "action": "Watch for rejection short near dynamic resistance",
+                "entry_reference": "63398.82",
+                "stop_or_invalidation": "64108.76",
+                "target_reference": "62074.5",
+                "risk_reward": "1.87",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_below",
+                    "reference_price": 63398.82,
+                    "description": "1H candle tests and closes below 4H EMA9 at 63,398.82"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 64108.76,
+                    "description": "4H candle closes above 4H EMA21 at 64,108.76"
+                  }
+                ]
+              }
+            ],
+            "plan_invalidation": "A closed 4H candle above 4H EMA21 (64,108.76) or a 1D close above 65,363.0 invalidates the short continuation structure.",
+            "wait_conditions": "Wait for either a confirmed 1H close below 61,447.32 to confirm a demand breakdown, or a corrective pullback into 4H EMA9 (63,398.82).",
+            "plan_id": "5947b4e9a8ae41cc9890c8610a416a16",
+            "plan_revision": 2,
+            "plan_active": true,
+            "assessed_at_utc": "2026-11-19T22:57:37Z"
+          }
+        }
+      ],
+      "revision_pending": false
     },
     "ethereum": {
       "symbol": "ETH",
-      "history": [],
-      "last_plan_attempt_date": "2026-11-19"
+      "history": [
+        {
+          "at_utc": "2026-11-19T22:58:30Z",
+          "event": "plan_created",
+          "status": "new_plan",
+          "plan_revision": 1,
+          "details": {
+            "history_id": 3
+          }
+        },
+        {
+          "at_utc": "2026-11-19T22:59:00Z",
+          "event": "assumptions_waiting",
+          "status": "new_plan",
+          "plan_revision": 1,
+          "details": {
+            "state": "waiting",
+            "scenarios": [
+              {
+                "name": "bearish_breakdown_continuation",
+                "state": "waiting",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_below",
+                    "reference_price": 1734.01,
+                    "description": "1H candle closes below 4H swing support at 1734.01",
+                    "state": "waiting",
+                    "observed_close": 1759.22,
+                    "candle_utc": "2026-11-19 21:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 1770.6,
+                    "description": "1H close recovers above the top of the 4H demand zone at 1770.60",
+                    "state": "waiting",
+                    "observed_close": 1759.22,
+                    "candle_utc": "2026-11-19 21:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "name": "pullback_to_dynamic_resistance",
+                "state": "waiting",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_above",
+                    "reference_price": 1770.6,
+                    "description": "Price exits 4H demand on a bounce above 1770.60",
+                    "state": "waiting",
+                    "observed_close": 1759.22,
+                    "candle_utc": "2026-11-19 21:00:00+00:00"
+                  },
+                  {
+                    "timeframe": "1h",
+                    "operator": "below",
+                    "reference_price": 1788.77,
+                    "description": "1H candle closes below 4H EMA9 at 1788.77 after testing overhead supply",
+                    "state": "met",
+                    "observed_close": 1759.22,
+                    "candle_utc": "2026-11-19 21:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 1804.26,
+                    "description": "4H candle closes above 4H EMA21 at 1804.26",
+                    "state": "waiting",
+                    "observed_close": 1776.22,
+                    "candle_utc": "2026-11-19 16:00:00+00:00"
+                  }
+                ]
+              }
+            ],
+            "reason": "closed_candle_conditions_and_deterministic_setup"
+          }
+        }
+      ],
+      "last_plan_attempt_date": "2026-11-20",
+      "plan_history": [
+        {
+          "at_utc": "2026-11-19T22:58:30Z",
+          "event": "plan_created",
+          "assessment": {
+            "status": "new_plan",
+            "market_situation": "ETH/USD is in a clear multi-timeframe downtrend across Daily, 4H, and 1H charts, with fully aligned bearish EMA structures and lower swing sequences. Current price (1759.22) is hovering directly inside a 4H demand zone (1696.51 to 1770.60) just above 4H swing support at 1753.07. Although higher-timeframe context is fully aligned bearish, HTF location confirmation has failed because price is resting inside opposing demand rather than pulling back to directional supply, preventing any active setup.",
+            "trend": "Bearish across all assessed horizons (Daily, 4H, 1H), evidenced by confirmed downward EMA alignments and sub-SMA50 pricing.",
+            "bias": "Bearish, dictated by confluent 1D and 4H structural lower highs and lower lows.",
+            "momentum": "Bearish across all horizons. Daily RSI is oversold at 26.06 with negative MACD (-149.05). 4H and 1H RSIs sit at 40.99 and 37.04 respectively, both displaying negative MACD values.",
+            "key_levels": "Resistance/Supply: 4H EMA9 at 1788.77, 4H EMA21 at 1804.26, Daily supply at 1827.97-1864.89, and 4H resistance at 1858.45. Support/Demand: 4H demand zone at 1696.51-1770.60, 4H support pivots at 1753.07, 1734.01, and 1713.65, and Daily support at 1512.13.",
+            "data_gaps": "Volume data is unavailable across all timeframes. Daily candle cache age is 22.97 hours.",
+            "plan_thesis": "Given the dominant bearish alignment, avoid shorting directly into 4H demand. Wait for either a confirmed bearish continuation breakdown below the demand base or a corrective rally into 4H dynamic resistance to assess a trend continuation short.",
+            "scenarios": [
+              {
+                "name": "bearish_breakdown_continuation",
+                "direction": "short",
+                "trigger": "Closed 1H candle crossing below key 4H swing support at 1734.01, confirming breakdown from the current demand cluster.",
+                "action": "Monitor for breakdown continuation toward major Daily support.",
+                "entry_reference": "1734.01",
+                "stop_or_invalidation": "1770.60",
+                "target_reference": "1512.13",
+                "risk_reward": "6.08",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_below",
+                    "reference_price": 1734.01,
+                    "description": "1H candle closes below 4H swing support at 1734.01"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 1770.6,
+                    "description": "1H close recovers above the top of the 4H demand zone at 1770.60"
+                  }
+                ]
+              },
+              {
+                "name": "pullback_to_dynamic_resistance",
+                "direction": "short",
+                "trigger": "Corrective bounce into the 4H EMA9/EMA21 zone followed by a closed 1H rejection below 1788.77.",
+                "action": "Assess short entry on confirmed rejection from declining resistance.",
+                "entry_reference": "1788.77",
+                "stop_or_invalidation": "1804.26",
+                "target_reference": "1713.65",
+                "risk_reward": "4.85",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_above",
+                    "reference_price": 1770.6,
+                    "description": "Price exits 4H demand on a bounce above 1770.60"
+                  },
+                  {
+                    "timeframe": "1h",
+                    "operator": "below",
+                    "reference_price": 1788.77,
+                    "description": "1H candle closes below 4H EMA9 at 1788.77 after testing overhead supply"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 1804.26,
+                    "description": "4H candle closes above 4H EMA21 at 1804.26"
+                  }
+                ]
+              }
+            ],
+            "plan_invalidation": "A 4H close above the 4H EMA21 (1804.26) or a 1D close above 1858.45 invalidates the bearish continuation thesis.",
+            "wait_conditions": "Wait for price to clear the 4H demand zone (1696.51-1770.60) either via a breakdown close below 1734.01 or a clean retest of 4H EMA9 resistance at 1788.77.",
+            "plan_id": "5c246f2de09a4a039bdd4291a7ba4abb",
+            "plan_revision": 1,
+            "plan_active": true,
+            "assessed_at_utc": "2026-11-19T22:58:30Z"
+          }
+        }
+      ],
+      "plan": {
+        "status": "wait",
+        "market_situation": "ETH/USD is in a clear multi-timeframe downtrend across Daily, 4H, and 1H charts, with fully aligned bearish EMA structures and lower swing sequences. Current price (1759.22) is hovering directly inside a 4H demand zone (1696.51 to 1770.60) just above 4H swing support at 1753.07. Although higher-timeframe context is fully aligned bearish, HTF location confirmation has failed because price is resting inside opposing demand rather than pulling back to directional supply, preventing any active setup.",
+        "trend": "Bearish across all assessed horizons (Daily, 4H, 1H), evidenced by confirmed downward EMA alignments and sub-SMA50 pricing.",
+        "bias": "Bearish, dictated by confluent 1D and 4H structural lower highs and lower lows.",
+        "momentum": "Bearish across all horizons. Daily RSI is oversold at 26.06 with negative MACD (-149.05). 4H and 1H RSIs sit at 40.99 and 37.04 respectively, both displaying negative MACD values.",
+        "key_levels": "Resistance/Supply: 4H EMA9 at 1788.77, 4H EMA21 at 1804.26, Daily supply at 1827.97-1864.89, and 4H resistance at 1858.45. Support/Demand: 4H demand zone at 1696.51-1770.60, 4H support pivots at 1753.07, 1734.01, and 1713.65, and Daily support at 1512.13.",
+        "data_gaps": "Volume data is unavailable across all timeframes. Daily candle cache age is 22.97 hours.",
+        "plan_thesis": "Given the dominant bearish alignment, avoid shorting directly into 4H demand. Wait for either a confirmed bearish continuation breakdown below the demand base or a corrective rally into 4H dynamic resistance to assess a trend continuation short.",
+        "scenarios": [
+          {
+            "name": "bearish_breakdown_continuation",
+            "direction": "short",
+            "trigger": "Closed 1H candle crossing below key 4H swing support at 1734.01, confirming breakdown from the current demand cluster.",
+            "action": "Monitor for breakdown continuation toward major Daily support.",
+            "entry_reference": "1734.01",
+            "stop_or_invalidation": "1770.60",
+            "target_reference": "1512.13",
+            "risk_reward": "6.08",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "crosses_below",
+                "reference_price": 1734.01,
+                "description": "1H candle closes below 4H swing support at 1734.01"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "1h",
+                "operator": "above",
+                "reference_price": 1770.6,
+                "description": "1H close recovers above the top of the 4H demand zone at 1770.60"
+              }
+            ]
+          },
+          {
+            "name": "pullback_to_dynamic_resistance",
+            "direction": "short",
+            "trigger": "Corrective bounce into the 4H EMA9/EMA21 zone followed by a closed 1H rejection below 1788.77.",
+            "action": "Assess short entry on confirmed rejection from declining resistance.",
+            "entry_reference": "1788.77",
+            "stop_or_invalidation": "1804.26",
+            "target_reference": "1713.65",
+            "risk_reward": "4.85",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "crosses_above",
+                "reference_price": 1770.6,
+                "description": "Price exits 4H demand on a bounce above 1770.60"
+              },
+              {
+                "timeframe": "1h",
+                "operator": "below",
+                "reference_price": 1788.77,
+                "description": "1H candle closes below 4H EMA9 at 1788.77 after testing overhead supply"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "4h",
+                "operator": "above",
+                "reference_price": 1804.26,
+                "description": "4H candle closes above 4H EMA21 at 1804.26"
+              }
+            ]
+          }
+        ],
+        "plan_invalidation": "A 4H close above the 4H EMA21 (1804.26) or a 1D close above 1858.45 invalidates the bearish continuation thesis.",
+        "wait_conditions": "Wait for price to clear the 4H demand zone (1696.51-1770.60) either via a breakdown close below 1734.01 or a clean retest of 4H EMA9 resistance at 1788.77.",
+        "plan_id": "5c246f2de09a4a039bdd4291a7ba4abb",
+        "plan_revision": 1,
+        "plan_active": true,
+        "assessed_at_utc": "2026-11-19T22:58:30Z"
+      },
+      "revision_pending": false,
+      "assumption_state": "waiting",
+      "actionable_notified": false
     },
     "solana": {
       "symbol": "SOL",
@@ -301,8 +664,254 @@
     },
     "hyperliquid": {
       "symbol": "HYPE",
-      "history": [],
-      "last_plan_attempt_date": "2026-11-19"
+      "history": [
+        {
+          "at_utc": "2026-11-19T23:02:26Z",
+          "event": "plan_created",
+          "status": "new_plan",
+          "plan_revision": 1,
+          "details": {
+            "history_id": 4
+          }
+        },
+        {
+          "at_utc": "2026-11-19T23:02:56Z",
+          "event": "assumptions_waiting",
+          "status": "new_plan",
+          "plan_revision": 1,
+          "details": {
+            "state": "waiting",
+            "scenarios": [
+              {
+                "name": "Bearish Rejection at 4H Supply",
+                "state": "waiting",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 70.2,
+                    "description": "Price tests into 4H supply zone at or above 70.20",
+                    "state": "waiting",
+                    "observed_close": 67.69,
+                    "candle_utc": "2026-11-19 21:00:00+00:00"
+                  },
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_below",
+                    "reference_price": 70.2,
+                    "description": "Closed 1H candle crosses back below 70.20 confirming rejection",
+                    "state": "waiting",
+                    "observed_close": 67.69,
+                    "candle_utc": "2026-11-19 21:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 71.62,
+                    "description": "4H candle closes above the top of 4H supply at 71.62",
+                    "state": "waiting",
+                    "observed_close": 68.61,
+                    "candle_utc": "2026-11-19 16:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "name": "Bearish Breakdown Below 4H Demand",
+                "state": "invalidated",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "below",
+                    "reference_price": 64.17,
+                    "description": "Closed 4H candle closes below 4H demand at 64.17",
+                    "state": "waiting",
+                    "observed_close": 68.61,
+                    "candle_utc": "2026-11-19 16:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 65.72,
+                    "description": "Price reclaims and closes back above 4H demand high at 65.72",
+                    "state": "met",
+                    "observed_close": 68.61,
+                    "candle_utc": "2026-11-19 16:00:00+00:00"
+                  }
+                ]
+              }
+            ],
+            "reason": "closed_candle_conditions_and_deterministic_setup"
+          }
+        }
+      ],
+      "last_plan_attempt_date": "2026-11-20",
+      "plan_history": [
+        {
+          "at_utc": "2026-11-19T23:02:26Z",
+          "event": "plan_created",
+          "assessment": {
+            "status": "new_plan",
+            "market_situation": "HYPE/USD trades at 67.69. Daily and 4H trends are confirmed bearish with daily EMA alignment below SMA50. However, both Daily and 4H structures are mixed (Daily has HH/LL; 4H has LH/HL), preventing structure alignment. 1H trend is neutral. The market is currently between 4H supply (70.20-71.62) and 4H demand (64.17-65.72), with no active HTF level interaction or entry confirmations.",
+            "trend": "Bearish on 1D (price below SMA50 80.97, EMA9 71.13, EMA21 74.95) and 4H (price below SMA50 69.06); neutral on 1H (EMAs flat around 68.05-68.12).",
+            "bias": "Bearish bias dictated by higher-timeframe daily and 4-hour trend alignment.",
+            "momentum": "Daily momentum is bearish (RSI 38.84, negative MACD histogram), 4H momentum is mildly bullish (RSI 51.0, positive MACD histogram), and 1H momentum is bearish (RSI 47.15, negative MACD histogram).",
+            "key_levels": "Resistance/Supply: 4H EMA9 (68.15), 4H EMA21 (68.18), 4H supply (70.20 - 71.62), 4H resistance (70.91), Daily supply (71.98 - 73.44). Support/Demand: 4H demand (64.17 - 65.72), 4H support (64.94), 4H lower demand (59.71 - 60.91).",
+            "data_gaps": "Volume data is unavailable across all timeframes. Daily candle data is 22.99 hours old (cached).",
+            "plan_thesis": "Given the broader bearish daily/4H trend, look for short continuation opportunities only after price rallies into overhead 4H supply/resistance and confirms rejection, or stand aside until structure aligns.",
+            "scenarios": [
+              {
+                "name": "Bearish Rejection at 4H Supply",
+                "direction": "short",
+                "trigger": "Closed 1H candle crossing below 70.20 after testing the 4H supply zone (70.20 - 71.62).",
+                "action": "Monitor for confirmed bearish entry confirmation (e.g. rejection candle or structure break) upon test of supply.",
+                "entry_reference": "70.20",
+                "stop_or_invalidation": "71.62",
+                "target_reference": "64.94",
+                "risk_reward": "3.66",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 70.2,
+                    "description": "Price tests into 4H supply zone at or above 70.20"
+                  },
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_below",
+                    "reference_price": 70.2,
+                    "description": "Closed 1H candle crosses back below 70.20 confirming rejection"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 71.62,
+                    "description": "4H candle closes above the top of 4H supply at 71.62"
+                  }
+                ]
+              },
+              {
+                "name": "Bearish Breakdown Below 4H Demand",
+                "direction": "short",
+                "trigger": "Closed 4H candle breaking below 4H demand low at 64.17.",
+                "action": "Watch for breakdown continuation toward the next 4H demand zone (59.71 - 60.91).",
+                "entry_reference": "64.17",
+                "stop_or_invalidation": "65.72",
+                "target_reference": "60.91",
+                "risk_reward": "2.10",
+                "assumptions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "below",
+                    "reference_price": 64.17,
+                    "description": "Closed 4H candle closes below 4H demand at 64.17"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 65.72,
+                    "description": "Price reclaims and closes back above 4H demand high at 65.72"
+                  }
+                ]
+              }
+            ],
+            "plan_invalidation": "The overall bearish premise is invalidated if price achieves a 1D close above daily resistance at 72.71 or 4H close above swing high 70.91, negating the HTF downtrend alignment.",
+            "wait_conditions": "Wait for price to resolve the current mid-range consolidation between 65.72 and 70.20 and interact directly with defined HTF levels (either supply test or demand breakdown).",
+            "plan_id": "8d0c289d09cc4363b182883cffdd9051",
+            "plan_revision": 1,
+            "plan_active": true,
+            "assessed_at_utc": "2026-11-19T23:02:26Z"
+          }
+        }
+      ],
+      "plan": {
+        "status": "wait",
+        "market_situation": "HYPE/USD trades at 67.69. Daily and 4H trends are confirmed bearish with daily EMA alignment below SMA50. However, both Daily and 4H structures are mixed (Daily has HH/LL; 4H has LH/HL), preventing structure alignment. 1H trend is neutral. The market is currently between 4H supply (70.20-71.62) and 4H demand (64.17-65.72), with no active HTF level interaction or entry confirmations.",
+        "trend": "Bearish on 1D (price below SMA50 80.97, EMA9 71.13, EMA21 74.95) and 4H (price below SMA50 69.06); neutral on 1H (EMAs flat around 68.05-68.12).",
+        "bias": "Bearish bias dictated by higher-timeframe daily and 4-hour trend alignment.",
+        "momentum": "Daily momentum is bearish (RSI 38.84, negative MACD histogram), 4H momentum is mildly bullish (RSI 51.0, positive MACD histogram), and 1H momentum is bearish (RSI 47.15, negative MACD histogram).",
+        "key_levels": "Resistance/Supply: 4H EMA9 (68.15), 4H EMA21 (68.18), 4H supply (70.20 - 71.62), 4H resistance (70.91), Daily supply (71.98 - 73.44). Support/Demand: 4H demand (64.17 - 65.72), 4H support (64.94), 4H lower demand (59.71 - 60.91).",
+        "data_gaps": "Volume data is unavailable across all timeframes. Daily candle data is 22.99 hours old (cached).",
+        "plan_thesis": "Given the broader bearish daily/4H trend, look for short continuation opportunities only after price rallies into overhead 4H supply/resistance and confirms rejection, or stand aside until structure aligns.",
+        "scenarios": [
+          {
+            "name": "Bearish Rejection at 4H Supply",
+            "direction": "short",
+            "trigger": "Closed 1H candle crossing below 70.20 after testing the 4H supply zone (70.20 - 71.62).",
+            "action": "Monitor for confirmed bearish entry confirmation (e.g. rejection candle or structure break) upon test of supply.",
+            "entry_reference": "70.20",
+            "stop_or_invalidation": "71.62",
+            "target_reference": "64.94",
+            "risk_reward": "3.66",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "above",
+                "reference_price": 70.2,
+                "description": "Price tests into 4H supply zone at or above 70.20"
+              },
+              {
+                "timeframe": "1h",
+                "operator": "crosses_below",
+                "reference_price": 70.2,
+                "description": "Closed 1H candle crosses back below 70.20 confirming rejection"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "4h",
+                "operator": "above",
+                "reference_price": 71.62,
+                "description": "4H candle closes above the top of 4H supply at 71.62"
+              }
+            ]
+          },
+          {
+            "name": "Bearish Breakdown Below 4H Demand",
+            "direction": "short",
+            "trigger": "Closed 4H candle breaking below 4H demand low at 64.17.",
+            "action": "Watch for breakdown continuation toward the next 4H demand zone (59.71 - 60.91).",
+            "entry_reference": "64.17",
+            "stop_or_invalidation": "65.72",
+            "target_reference": "60.91",
+            "risk_reward": "2.10",
+            "assumptions": [
+              {
+                "timeframe": "4h",
+                "operator": "below",
+                "reference_price": 64.17,
+                "description": "Closed 4H candle closes below 4H demand at 64.17"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "4h",
+                "operator": "above",
+                "reference_price": 65.72,
+                "description": "Price reclaims and closes back above 4H demand high at 65.72"
+              }
+            ]
+          }
+        ],
+        "plan_invalidation": "The overall bearish premise is invalidated if price achieves a 1D close above daily resistance at 72.71 or 4H close above swing high 70.91, negating the HTF downtrend alignment.",
+        "wait_conditions": "Wait for price to resolve the current mid-range consolidation between 65.72 and 70.20 and interact directly with defined HTF levels (either supply test or demand breakdown).",
+        "plan_id": "8d0c289d09cc4363b182883cffdd9051",
+        "plan_revision": 1,
+        "plan_active": true,
+        "assessed_at_utc": "2026-11-19T23:02:26Z"
+      },
+      "revision_pending": false,
+      "assumption_state": "waiting",
+      "actionable_notified": false
     },
     "binancecoin": {
       "symbol": "BNB",
