@@ -114,108 +114,190 @@
             ],
             "reason": "closed_candle_conditions_and_deterministic_setup"
           }
+        },
+        {
+          "at_utc": "2026-11-19T12:52:50Z",
+          "event": "plan_revised",
+          "status": "revise",
+          "plan_revision": 4,
+          "details": {
+            "history_id": 1
+          }
         }
       ],
       "plan": {
         "status": "wait",
-        "market_situation": "SOL/USD trades at 71.38. Daily, 4H, and 1H trends remain aligned bearish, while Daily structure is mixed (LH, HL) and 4H structure is bearish (LH, LL). Price is currently between Daily supply (74.14-76.75) above and Daily demand (63.40-64.68) below without active HTF location confirmation.",
-        "trend": "Bearish across Daily, 4H, and 1H timeframes (price below all SMA50 and EMA alignments are bearish).",
-        "bias": "Bearish, supported by aligned multi-timeframe trends.",
-        "momentum": "Bearish on Daily (RSI 19.67, MACD histogram -0.97) and 4H (RSI 29.15, MACD histogram -0.37); 1H RSI is 45.16 with MACD histogram at 0.27.",
-        "key_levels": "Support: Daily demand 63.40-64.68, Daily support 64.04, 60.30. Resistance: 4H EMA9 72.80, Daily supply 74.14-76.75, Daily resistance 74.89, 4H supply 81.34-82.98.",
-        "data_gaps": "Volume data is unavailable across all timeframes. Open interest and funding rates are missing.",
-        "plan_thesis": "The plan is revised to reflect updated price levels after breaking previous minor supports. With HTF context aligned bearish but price unconfirmed at any key HTF location, trading remains on hold until price retests supply overhead or completes a structure reset at lower demand.",
+        "market_situation": "SOL/USD is trading at 74.41. Daily context remains bearish while 4H trend has shifted to neutral and 1H has turned bullish. Price has now pushed up directly into the Daily supply zone (74.14-76.75) and tests 1D resistance at 74.89, providing confirmed HTF location on the bearish side. However, trend and structure alignment fail (Daily bearish, 4H neutral, 1H bullish; Daily/4H structures both mixed), and entry confirmation is incomplete (1 of 2 required), resulting in no authorized deterministic setup.",
+        "trend": "Daily is bearish (confirmed, below SMA50 99.97); 4H is neutral (unconfirmed, below SMA50 75.91); 1H is bullish (confirmed, above SMA50 73.83).",
+        "bias": "Neutral to bearish HTF bias, conflicting with short-term 1H bullish momentum.",
+        "momentum": "Daily momentum is bearish (RSI 29.20, MACD histogram -1.06); 4H momentum is bullish (RSI 51.47, MACD histogram 0.42); 1H momentum is bullish (RSI 54.47, MACD histogram 0.09).",
+        "key_levels": "Supply/Resistance: Daily supply (74.14-76.75), 1D resistance 74.89, 4H supply (74.79-76.31), 4H resistance 75.55. Demand/Support: Daily demand (72.67-74.13), 1D support 73.40, Daily demand (69.97-71.39), 4H support 69.96.",
+        "data_gaps": "Volume data is unavailable across all timeframes. Open interest and funding rate data are not provided.",
+        "plan_thesis": "The previous plan is revised because price has moved from 71.38 into the overhead Daily supply zone (74.14-76.75), activating HTF bearish location. Because lower timeframe momentum is currently bullish and higher timeframe structure is not aligned, direct execution is not permitted. Trading remains on hold until either a 1H structural breakdown confirms supply rejection, or price closes decisively above supply to invalidate the bearish thesis.",
         "scenarios": [
           {
-            "name": "Stand Aside - Unconfirmed HTF Location",
-            "direction": "stand_aside",
-            "trigger": "Price remains in open space between 72.80 resistance and 64.04 support without HTF location confirmation",
-            "action": "Remain on sidelines and monitor 1H price action around key levels",
+            "name": "Bearish Supply Rejection",
+            "direction": "short",
+            "trigger": "Closed 1H candle crossing below 1H SMA50 (73.83) after rejection in Daily supply zone (74.14-76.75)",
+            "action": "Monitor for confirmed 1H breakdown before assessing short entry; no active trade execution authorized",
             "entry_reference": "unavailable",
             "stop_or_invalidation": "unavailable",
             "target_reference": "unavailable",
-            "risk_reward": "unavailable"
+            "risk_reward": "unavailable",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "below",
+                "reference_price": 73.83,
+                "description": "1H candle closes below 1H SMA50 indicating loss of short-term upward momentum"
+              },
+              {
+                "timeframe": "4h",
+                "operator": "below",
+                "reference_price": 76.75,
+                "description": "4H price remains held below the top of Daily supply zone"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "4h",
+                "operator": "above",
+                "reference_price": 76.75,
+                "description": "4H candle closes above Daily supply zone high"
+              }
+            ]
           },
           {
-            "name": "Bearish Retest at Overhead Supply",
-            "direction": "short",
-            "trigger": "Pullback into 4H EMA9 (72.80) or Daily supply (74.14-76.75) followed by a closed 1H bearish rejection",
-            "action": "Monitor for conditional short trigger upon 1H bearish rejection at supply",
-            "entry_reference": "72.80",
-            "stop_or_invalidation": "76.75",
-            "target_reference": "64.04",
-            "risk_reward": "2.22:1"
-          },
-          {
-            "name": "Bullish Reversal at Lower Demand",
-            "direction": "long",
-            "trigger": "Price enters Daily demand zone (63.40-64.68) and prints a completed 1H bullish structure break and reclaim",
-            "action": "Wait for 1H bullish structure reclaim within HTF demand prior to considering long setups",
-            "entry_reference": "64.68",
-            "stop_or_invalidation": "63.40",
-            "target_reference": "74.14",
-            "risk_reward": "7.39:1"
+            "name": "Stand Aside - Awaiting Structure Alignment",
+            "direction": "stand_aside",
+            "trigger": "Price remains inside the Daily supply zone (74.14-76.75) with conflicting 1H bullish momentum",
+            "action": "Stay flat until HTF trends align and at least two entry confirmation conditions are satisfied",
+            "entry_reference": "unavailable",
+            "stop_or_invalidation": "unavailable",
+            "target_reference": "unavailable",
+            "risk_reward": "unavailable",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "above",
+                "reference_price": 74.14,
+                "description": "1H price remains within or above the lower boundary of Daily supply zone"
+              },
+              {
+                "timeframe": "1h",
+                "operator": "below",
+                "reference_price": 76.75,
+                "description": "1H price remains below the upper boundary of Daily supply zone"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "1h",
+                "operator": "below",
+                "reference_price": 73.4,
+                "description": "1H candle closes below Daily support level at 73.40"
+              }
+            ]
           }
         ],
-        "plan_invalidation": "Revised plan is invalidated if price breaks below Daily support at 60.30 or closes cleanly above 4H resistance at 82.16.",
-        "wait_conditions": "Wait for HTF location interaction confirmation, execution authorization, and aligned 1H structural confirmation.",
-        "superseded_plan": {
-          "status": "wait",
-          "market_situation": "SOL/USD remains at 72.22 within the Daily demand zone (72.67-74.90). Daily, 4H, and 1H trends remain fully bearish with heavily oversold momentum (4H RSI 14.53, 1H RSI 22.95). HTF location interaction and execution authorization are still not confirmed.",
-          "trend": "Daily trend is bearish (below SMA50 104.64 with aligned EMAs). 4H trend is bearish (below SMA50 84.34 with aligned EMAs). 1H trend is bearish (below SMA50 78.26).",
-          "bias": "Bearish, with short-term timeframes severely oversold.",
-          "momentum": "Bearish across timeframes: Daily RSI is 22.62 (MACD -5.78), 4H RSI is 14.53 (MACD -2.95), and 1H RSI is 22.95 (MACD -1.60).",
-          "key_levels": "Support: Daily demand 72.67-74.90, 69.97-71.39, swing low 70.68. Resistance: 4H EMA9 at 76.29, 4H supply/resistance at 82.16 and 85.64.",
-          "data_gaps": "Volume data is unavailable across all timeframes. Funding rate and open interest are missing.",
-          "plan_thesis": "The previous plan remains active as price continues to consolidate inside Daily demand (72.67-74.90) without execution authorization or confirmed HTF location setup. The plan remains in wait status for either a pullback to resistance or a bullish 1H structure reclaim.",
-          "scenarios": [
-            {
-              "name": "Stand Aside - Unconfirmed Demand Zone",
-              "direction": "stand_aside",
-              "trigger": "Price remains within 72.67-74.90 demand zone without confirmed HTF location or bullish reversal setup",
-              "action": "Remain on sidelines and monitor 1H structure",
-              "entry_reference": "unavailable",
-              "stop_or_invalidation": "unavailable",
-              "target_reference": "unavailable",
-              "risk_reward": "unavailable"
-            },
-            {
-              "name": "Bearish Pullback Retest",
-              "direction": "short",
-              "trigger": "Pullback towards 4H EMA9 (76.29) or supply zone (81.34-82.98) followed by 1H bearish rejection",
-              "action": "Monitor for conditional short trigger upon 1H bearish confirmation",
-              "entry_reference": "76.29",
-              "stop_or_invalidation": "82.16",
-              "target_reference": "70.68",
-              "risk_reward": "0.95:1"
-            },
-            {
-              "name": "Bullish Demand Reversal",
-              "direction": "long",
-              "trigger": "Completed 1H bullish structure break and reclaim above 74.90 demand zone high",
-              "action": "Wait for 1H bullish reversal structure prior to considering entry",
-              "entry_reference": "74.90",
-              "stop_or_invalidation": "70.68",
-              "target_reference": "82.16",
-              "risk_reward": "1.72:1"
-            }
-          ],
-          "plan_invalidation": "Plan is invalidated if price drops clean below Daily support at 70.68 or reclaims back above 4H resistance at 82.16.",
-          "wait_conditions": "Wait for confirmed HTF location interaction, execution authorization, and 1H structure alignment.",
-          "plan_id": "e0afa1960fd240ffb21ba191af55ab76",
-          "plan_revision": 2,
-          "plan_active": true,
-          "assessed_at_utc": "2026-11-14T20:27:10Z",
-          "history_id": 8
-        },
+        "plan_invalidation": "The bearish watch plan is invalidated if a 4H candle closes above 76.75 (high of Daily supply zone) or breaks above 4H swing high at 82.16.",
+        "wait_conditions": "Wait for 4H trend to resolve from neutral to directional alignment with Daily, 1H momentum to align, and entry confirmations to reach the required count of 2.",
         "plan_id": "e0afa1960fd240ffb21ba191af55ab76",
-        "plan_revision": 3,
+        "plan_revision": 4,
         "plan_active": true,
-        "assessed_at_utc": "2026-11-15T19:02:46Z",
-        "history_id": 11
+        "assessed_at_utc": "2026-11-19T12:52:49Z"
       },
       "assumption_state": "waiting",
-      "actionable_notified": false
+      "actionable_notified": false,
+      "plan_history": [
+        {
+          "at_utc": "2026-11-19T12:52:50Z",
+          "event": "plan_revised",
+          "assessment": {
+            "status": "revise",
+            "market_situation": "SOL/USD is trading at 74.41. Daily context remains bearish while 4H trend has shifted to neutral and 1H has turned bullish. Price has now pushed up directly into the Daily supply zone (74.14-76.75) and tests 1D resistance at 74.89, providing confirmed HTF location on the bearish side. However, trend and structure alignment fail (Daily bearish, 4H neutral, 1H bullish; Daily/4H structures both mixed), and entry confirmation is incomplete (1 of 2 required), resulting in no authorized deterministic setup.",
+            "trend": "Daily is bearish (confirmed, below SMA50 99.97); 4H is neutral (unconfirmed, below SMA50 75.91); 1H is bullish (confirmed, above SMA50 73.83).",
+            "bias": "Neutral to bearish HTF bias, conflicting with short-term 1H bullish momentum.",
+            "momentum": "Daily momentum is bearish (RSI 29.20, MACD histogram -1.06); 4H momentum is bullish (RSI 51.47, MACD histogram 0.42); 1H momentum is bullish (RSI 54.47, MACD histogram 0.09).",
+            "key_levels": "Supply/Resistance: Daily supply (74.14-76.75), 1D resistance 74.89, 4H supply (74.79-76.31), 4H resistance 75.55. Demand/Support: Daily demand (72.67-74.13), 1D support 73.40, Daily demand (69.97-71.39), 4H support 69.96.",
+            "data_gaps": "Volume data is unavailable across all timeframes. Open interest and funding rate data are not provided.",
+            "plan_thesis": "The previous plan is revised because price has moved from 71.38 into the overhead Daily supply zone (74.14-76.75), activating HTF bearish location. Because lower timeframe momentum is currently bullish and higher timeframe structure is not aligned, direct execution is not permitted. Trading remains on hold until either a 1H structural breakdown confirms supply rejection, or price closes decisively above supply to invalidate the bearish thesis.",
+            "scenarios": [
+              {
+                "name": "Bearish Supply Rejection",
+                "direction": "short",
+                "trigger": "Closed 1H candle crossing below 1H SMA50 (73.83) after rejection in Daily supply zone (74.14-76.75)",
+                "action": "Monitor for confirmed 1H breakdown before assessing short entry; no active trade execution authorized",
+                "entry_reference": "unavailable",
+                "stop_or_invalidation": "unavailable",
+                "target_reference": "unavailable",
+                "risk_reward": "unavailable",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "below",
+                    "reference_price": 73.83,
+                    "description": "1H candle closes below 1H SMA50 indicating loss of short-term upward momentum"
+                  },
+                  {
+                    "timeframe": "4h",
+                    "operator": "below",
+                    "reference_price": 76.75,
+                    "description": "4H price remains held below the top of Daily supply zone"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 76.75,
+                    "description": "4H candle closes above Daily supply zone high"
+                  }
+                ]
+              },
+              {
+                "name": "Stand Aside - Awaiting Structure Alignment",
+                "direction": "stand_aside",
+                "trigger": "Price remains inside the Daily supply zone (74.14-76.75) with conflicting 1H bullish momentum",
+                "action": "Stay flat until HTF trends align and at least two entry confirmation conditions are satisfied",
+                "entry_reference": "unavailable",
+                "stop_or_invalidation": "unavailable",
+                "target_reference": "unavailable",
+                "risk_reward": "unavailable",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 74.14,
+                    "description": "1H price remains within or above the lower boundary of Daily supply zone"
+                  },
+                  {
+                    "timeframe": "1h",
+                    "operator": "below",
+                    "reference_price": 76.75,
+                    "description": "1H price remains below the upper boundary of Daily supply zone"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "below",
+                    "reference_price": 73.4,
+                    "description": "1H candle closes below Daily support level at 73.40"
+                  }
+                ]
+              }
+            ],
+            "plan_invalidation": "The bearish watch plan is invalidated if a 4H candle closes above 76.75 (high of Daily supply zone) or breaks above 4H swing high at 82.16.",
+            "wait_conditions": "Wait for 4H trend to resolve from neutral to directional alignment with Daily, 1H momentum to align, and entry confirmations to reach the required count of 2.",
+            "plan_id": "e0afa1960fd240ffb21ba191af55ab76",
+            "plan_revision": 4,
+            "plan_active": true,
+            "assessed_at_utc": "2026-11-19T12:52:49Z"
+          }
+        }
+      ],
+      "revision_pending": false
     },
     "hyperliquid": {
       "symbol": "HYPE",
