@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "last_daily_summary_date": "2026-11-18",
+  "last_daily_summary_date": "2026-11-19",
   "assets": {
     "bitcoin": {
       "symbol": "BTC",
@@ -77,7 +77,7 @@
     "ethereum": {
       "symbol": "ETH",
       "history": [],
-      "last_plan_attempt_date": "2026-11-18"
+      "last_plan_attempt_date": "2026-11-19"
     },
     "solana": {
       "symbol": "SOL",
@@ -220,7 +220,7 @@
     "hyperliquid": {
       "symbol": "HYPE",
       "history": [],
-      "last_plan_attempt_date": "2026-11-18"
+      "last_plan_attempt_date": "2026-11-19"
     },
     "binancecoin": {
       "symbol": "BNB",
