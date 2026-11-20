@@ -941,49 +941,166 @@
             ],
             "reason": "closed_candle_conditions_and_deterministic_setup"
           }
+        },
+        {
+          "at_utc": "2026-11-20T06:13:03Z",
+          "event": "plan_revised",
+          "status": "revise",
+          "plan_revision": 3,
+          "details": {
+            "history_id": 5
+          }
         }
       ],
       "plan": {
         "status": "wait",
-        "market_situation": "BNB/USD is trading at 590.60, currently inside a Daily supply zone (578.40-601.35). Daily, 4H, and 1H trends and structures remain confirmed bearish with all price levels below their respective 50 SMAs. While HTF location is confirmed inside the Daily supply zone, execution authorization remains unauthorized (no_setup) due to missing entry confirmations (1/2 confirmed: EMA reclaim/structure confirmed; liquidity sweep, structure break, and rejection candle not confirmed). Candidate risk context is not_applicable.",
-        "trend": "Bearish and aligned across Daily, 4H, and 1H timeframes with bearish EMA alignment across all timeframes. Price is below 50 SMAs on Daily (731.76), 4H (660.99), and 1H (604.63).",
-        "bias": "Bearish across HTF and LTF timeframes.",
-        "momentum": "Bearish across timeframes. Daily RSI is oversold at 27.20, 4H RSI is 29.30, and 1H RSI is 44.70. Daily MACD histogram is negative (-5.55) and 4H MACD histogram is negative (-1.83), while 1H MACD histogram shows mild positive divergence (1.20).",
-        "key_levels": "Resistance: 1D supply zone 578.40-601.35, 1D resistance 595.40, 1D supply zone 613.38-638.17, and 4H resistance 689.93. Support: 1D resistance/pivot 584.24, 1D demand zone 550.01-565.63, 1D support 560.03, and 1D support 556.75.",
-        "data_gaps": "Volume data is unavailable across all timeframes (1D, 4H, 1H). Daily candle age is 19.06 hours, hourly candle age is 0.06 hours.",
-        "plan_thesis": "The macro and intermediate trend remains heavily bearish. Price is interacting with a Daily supply zone (578.40-601.35), but execution cannot be authorized until entry confirmations reach the required 2/2 threshold (currently 1/2) alongside a valid candidate setup.",
+        "market_situation": "BNB/USD has fallen to 566.78, departing the previous Daily supply zone (578.40-601.35) and entering the 4H demand zone (560.80-572.12) near 4H support at 566.46. Daily, 4H, and 1H trends and structures remain confirmed bearish with all moving averages aligned downward. However, directional HTF location for the bearish trend is unconfirmed (distance to nearest bearish supply is 11.62 above), while price sits immediately inside bullish demand. Execution is unauthorized (no_setup) and candidate risk context remains not_applicable.",
+        "trend": "Bearish across Daily, 4H, and 1H timeframes. EMA alignment is bearish on all frames, and price is trading beneath the SMA50 on Daily (713.69), 4H (607.44), and 1H (584.52).",
+        "bias": "Bearish overall across HTF and LTF structure, but constrained near-term by unconfirmed HTF short location due to direct contact with 4H demand (560.80-572.12).",
+        "momentum": "Bearish momentum across timeframes. Daily RSI is oversold at 26.04, 4H RSI is 34.01, and 1H RSI is 28.73. MACD histograms are negative on Daily (-9.13) and 1H (-1.58), but slightly positive on 4H (0.83).",
+        "key_levels": "Resistance: 1D supply zone 578.40-601.35, 4H EMA9 at 583.59, 1D resistance 584.24, and 4H resistance 598.56. Support: 4H support at 566.46, 4H demand zone 560.80-572.12, 1D demand zone 550.01-565.63, 1D support 560.03, and 1D support 556.75.",
+        "data_gaps": "Volume data is unavailable across all timeframes (1D, 4H, 1H).",
+        "plan_thesis": "The previous watch plan evaluated a rejection inside 578.40-601.35. Price has now pushed down into demand at 566.78, requiring revision. Because the HTF trend is strictly bearish, entering shorts inside 4H demand without HTF location confirmation lacks structural edge. A valid watch plan requires waiting for price either to pull back to confirmed bearish overhead supply (578.40-601.35) or cleanly break below support (560.03) to open continuation lower.",
         "scenarios": [
           {
-            "name": "Bearish Resistance Rejection",
+            "name": "Pullback Rejection to Overhead Supply",
             "direction": "short",
-            "trigger": "Closed 1H candle rejection with structure break or liquidity sweep inside the Daily supply zone (578.40-601.35) achieving 2/2 entry confirmations",
-            "action": "Monitor for valid bearish short setup trigger upon location confirmation and entry authorization",
-            "entry_reference": "590.60",
+            "trigger": "Closed 1H candle crossing into and rejecting the Daily supply zone (578.40-601.35) with setup authorization",
+            "action": "Evaluate short setup triggers upon re-testing overhead Daily supply",
+            "entry_reference": "578.40",
             "stop_or_invalidation": "601.35",
-            "target_reference": "557.82",
-            "risk_reward": "unavailable"
+            "target_reference": "560.03",
+            "risk_reward": "unavailable",
+            "assumptions": [
+              {
+                "timeframe": "1h",
+                "operator": "above",
+                "reference_price": 578.4,
+                "description": "Closed 1H candle enters the Daily supply zone to confirm bearish HTF location"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "4h",
+                "operator": "above",
+                "reference_price": 601.35,
+                "description": "Closed 4H candle above 601.35 violates the Daily supply zone"
+              }
+            ]
           },
           {
-            "name": "Stand Aside Pending Setup Authorization",
-            "direction": "stand_aside",
-            "trigger": "Price remains inside 578.40-601.35 range without secondary entry confirmation or setup authorization",
-            "action": "Maintain cash position and await completed execution triggers",
+            "name": "Breakdown Below Daily Demand",
+            "direction": "short",
+            "trigger": "Closed 4H candle below Daily demand low and support at 550.01",
+            "action": "Monitor for trend continuation short setup after demand clears",
             "entry_reference": "unavailable",
-            "stop_or_invalidation": "unavailable",
-            "target_reference": "unavailable",
-            "risk_reward": "unavailable"
+            "stop_or_invalidation": "566.46",
+            "target_reference": "539.35",
+            "risk_reward": "unavailable",
+            "assumptions": [
+              {
+                "timeframe": "4h",
+                "operator": "below",
+                "reference_price": 550.01,
+                "description": "Closed 4H candle resolves below the Daily demand zone boundary"
+              }
+            ],
+            "invalidation_conditions": [
+              {
+                "timeframe": "1h",
+                "operator": "above",
+                "reference_price": 584.24,
+                "description": "Closed 1H candle reclaims resistance at 584.24"
+              }
+            ]
           }
         ],
-        "plan_invalidation": "A closed 4H candle above the top of the Daily supply zone at 601.35 and 1H SMA50 at 604.63 invalidates the short setup plan.",
-        "wait_conditions": "Wait for 2/2 entry confirmations (currently 1/2), execution authorization, and setup status change from no_setup.",
+        "plan_invalidation": "A closed 4H candle above 601.35 (top of Daily supply zone) invalidates the macro bearish continuation thesis.",
+        "wait_conditions": "Wait for price to either rotate up into Daily supply (578.40) to re-establish HTF location or close below Daily demand support (550.01), along with candidate setup authorization from no_setup.",
         "plan_id": "cf1deaad4be147c49ce8544fb9353214",
-        "plan_revision": 2,
+        "plan_revision": 3,
         "plan_active": true,
-        "assessed_at_utc": "2026-11-15T19:04:08Z",
-        "history_id": 12
+        "assessed_at_utc": "2026-11-20T06:13:03Z"
       },
       "assumption_state": "waiting",
-      "actionable_notified": false
+      "actionable_notified": false,
+      "plan_history": [
+        {
+          "at_utc": "2026-11-20T06:13:03Z",
+          "event": "plan_revised",
+          "assessment": {
+            "status": "revise",
+            "market_situation": "BNB/USD has fallen to 566.78, departing the previous Daily supply zone (578.40-601.35) and entering the 4H demand zone (560.80-572.12) near 4H support at 566.46. Daily, 4H, and 1H trends and structures remain confirmed bearish with all moving averages aligned downward. However, directional HTF location for the bearish trend is unconfirmed (distance to nearest bearish supply is 11.62 above), while price sits immediately inside bullish demand. Execution is unauthorized (no_setup) and candidate risk context remains not_applicable.",
+            "trend": "Bearish across Daily, 4H, and 1H timeframes. EMA alignment is bearish on all frames, and price is trading beneath the SMA50 on Daily (713.69), 4H (607.44), and 1H (584.52).",
+            "bias": "Bearish overall across HTF and LTF structure, but constrained near-term by unconfirmed HTF short location due to direct contact with 4H demand (560.80-572.12).",
+            "momentum": "Bearish momentum across timeframes. Daily RSI is oversold at 26.04, 4H RSI is 34.01, and 1H RSI is 28.73. MACD histograms are negative on Daily (-9.13) and 1H (-1.58), but slightly positive on 4H (0.83).",
+            "key_levels": "Resistance: 1D supply zone 578.40-601.35, 4H EMA9 at 583.59, 1D resistance 584.24, and 4H resistance 598.56. Support: 4H support at 566.46, 4H demand zone 560.80-572.12, 1D demand zone 550.01-565.63, 1D support 560.03, and 1D support 556.75.",
+            "data_gaps": "Volume data is unavailable across all timeframes (1D, 4H, 1H).",
+            "plan_thesis": "The previous watch plan evaluated a rejection inside 578.40-601.35. Price has now pushed down into demand at 566.78, requiring revision. Because the HTF trend is strictly bearish, entering shorts inside 4H demand without HTF location confirmation lacks structural edge. A valid watch plan requires waiting for price either to pull back to confirmed bearish overhead supply (578.40-601.35) or cleanly break below support (560.03) to open continuation lower.",
+            "scenarios": [
+              {
+                "name": "Pullback Rejection to Overhead Supply",
+                "direction": "short",
+                "trigger": "Closed 1H candle crossing into and rejecting the Daily supply zone (578.40-601.35) with setup authorization",
+                "action": "Evaluate short setup triggers upon re-testing overhead Daily supply",
+                "entry_reference": "578.40",
+                "stop_or_invalidation": "601.35",
+                "target_reference": "560.03",
+                "risk_reward": "unavailable",
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 578.4,
+                    "description": "Closed 1H candle enters the Daily supply zone to confirm bearish HTF location"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 601.35,
+                    "description": "Closed 4H candle above 601.35 violates the Daily supply zone"
+                  }
+                ]
+              },
+              {
+                "name": "Breakdown Below Daily Demand",
+                "direction": "short",
+                "trigger": "Closed 4H candle below Daily demand low and support at 550.01",
+                "action": "Monitor for trend continuation short setup after demand clears",
+                "entry_reference": "unavailable",
+                "stop_or_invalidation": "566.46",
+                "target_reference": "539.35",
+                "risk_reward": "unavailable",
+                "assumptions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "below",
+                    "reference_price": 550.01,
+                    "description": "Closed 4H candle resolves below the Daily demand zone boundary"
+                  }
+                ],
+                "invalidation_conditions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 584.24,
+                    "description": "Closed 1H candle reclaims resistance at 584.24"
+                  }
+                ]
+              }
+            ],
+            "plan_invalidation": "A closed 4H candle above 601.35 (top of Daily supply zone) invalidates the macro bearish continuation thesis.",
+            "wait_conditions": "Wait for price to either rotate up into Daily supply (578.40) to re-establish HTF location or close below Daily demand support (550.01), along with candidate setup authorization from no_setup.",
+            "plan_id": "cf1deaad4be147c49ce8544fb9353214",
+            "plan_revision": 3,
+            "plan_active": true,
+            "assessed_at_utc": "2026-11-20T06:13:03Z"
+          }
+        }
+      ],
+      "revision_pending": false
     }
   }
 }
