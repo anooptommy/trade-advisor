@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "last_daily_summary_date": "2026-11-24",
+  "last_daily_summary_date": "2026-11-25",
   "assets": {
     "bitcoin": {
       "symbol": "BTC",
@@ -105,10 +105,76 @@
             ],
             "reason": "closed_candle_conditions_and_deterministic_setup"
           }
+        },
+        {
+          "at_utc": "2026-11-24T19:24:13Z",
+          "event": "assumptions_waiting",
+          "status": "actionable",
+          "plan_revision": 2,
+          "details": {
+            "state": "waiting",
+            "scenarios": [
+              {
+                "name": "Demand Breakdown Continuation Short",
+                "state": "waiting",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "below",
+                    "reference_price": 61447.32,
+                    "description": "1H candle closes below 4H demand zone low of 61,447.32",
+                    "state": "met",
+                    "observed_close": 60046.0,
+                    "candle_utc": "2026-11-24 18:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 62701.81,
+                    "description": "1H candle closes back above 4H demand zone high at 62,701.81",
+                    "state": "waiting",
+                    "observed_close": 60046.0,
+                    "candle_utc": "2026-11-24 18:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "name": "Dynamic Resistance Retest Short",
+                "state": "waiting",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "crosses_below",
+                    "reference_price": 63398.82,
+                    "description": "1H candle tests and closes below 4H EMA9 at 63,398.82",
+                    "state": "waiting",
+                    "observed_close": 60046.0,
+                    "candle_utc": "2026-11-24 18:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 64108.76,
+                    "description": "4H candle closes above 4H EMA21 at 64,108.76",
+                    "state": "waiting",
+                    "observed_close": 60357.0,
+                    "candle_utc": "2026-11-24 12:00:00+00:00"
+                  }
+                ]
+              }
+            ],
+            "reason": "closed_candle_conditions_and_deterministic_setup"
+          }
         }
       ],
       "plan": {
-        "status": "actionable",
+        "status": "wait",
         "market_situation": "BTC/USD has traded down to 62,064.0, directly entering the 1D demand zone (61,618.59 - 63,150.25) and 4H demand zone (61,447.32 - 62,701.81) without triggering the previous supply retest at 65,363.0. The prior short plan target has been reached, invalidating the previous wait setup. Daily, 4H, and 1H trends and structures remain confirmed bearish, but price is now sitting directly inside HTF demand zones.",
         "trend": "Bearish across Daily, 4H, and 1H timeframes, supported by lower-high/lower-low structures and EMA alignments below the SMA50 on all three horizons.",
         "bias": "Bearish.",
@@ -177,8 +243,8 @@
         "plan_active": true,
         "assessed_at_utc": "2026-11-19T22:57:37Z"
       },
-      "assumption_state": "actionable",
-      "actionable_notified": true,
+      "assumption_state": "waiting",
+      "actionable_notified": false,
       "plan_history": [
         {
           "at_utc": "2026-11-19T22:57:37Z",
@@ -1082,10 +1148,76 @@
             ],
             "reason": "closed_candle_conditions_and_deterministic_setup"
           }
+        },
+        {
+          "at_utc": "2026-11-24T19:25:40Z",
+          "event": "assumptions_waiting",
+          "status": "actionable",
+          "plan_revision": 3,
+          "details": {
+            "state": "waiting",
+            "scenarios": [
+              {
+                "name": "Pullback Rejection to Overhead Supply",
+                "state": "waiting",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 578.4,
+                    "description": "Closed 1H candle enters the Daily supply zone to confirm bearish HTF location",
+                    "state": "waiting",
+                    "observed_close": 549.42,
+                    "candle_utc": "2026-11-24 18:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "above",
+                    "reference_price": 601.35,
+                    "description": "Closed 4H candle above 601.35 violates the Daily supply zone",
+                    "state": "waiting",
+                    "observed_close": 551.39,
+                    "candle_utc": "2026-11-24 12:00:00+00:00"
+                  }
+                ]
+              },
+              {
+                "name": "Breakdown Below Daily Demand",
+                "state": "waiting",
+                "setup_confirmed": false,
+                "assumptions": [
+                  {
+                    "timeframe": "4h",
+                    "operator": "below",
+                    "reference_price": 550.01,
+                    "description": "Closed 4H candle resolves below the Daily demand zone boundary",
+                    "state": "waiting",
+                    "observed_close": 551.39,
+                    "candle_utc": "2026-11-24 12:00:00+00:00"
+                  }
+                ],
+                "invalidation_checks": [
+                  {
+                    "timeframe": "1h",
+                    "operator": "above",
+                    "reference_price": 584.24,
+                    "description": "Closed 1H candle reclaims resistance at 584.24",
+                    "state": "waiting",
+                    "observed_close": 549.42,
+                    "candle_utc": "2026-11-24 18:00:00+00:00"
+                  }
+                ]
+              }
+            ],
+            "reason": "closed_candle_conditions_and_deterministic_setup"
+          }
         }
       ],
       "plan": {
-        "status": "actionable",
+        "status": "wait",
         "market_situation": "BNB/USD has fallen to 566.78, departing the previous Daily supply zone (578.40-601.35) and entering the 4H demand zone (560.80-572.12) near 4H support at 566.46. Daily, 4H, and 1H trends and structures remain confirmed bearish with all moving averages aligned downward. However, directional HTF location for the bearish trend is unconfirmed (distance to nearest bearish supply is 11.62 above), while price sits immediately inside bullish demand. Execution is unauthorized (no_setup) and candidate risk context remains not_applicable.",
         "trend": "Bearish across Daily, 4H, and 1H timeframes. EMA alignment is bearish on all frames, and price is trading beneath the SMA50 on Daily (713.69), 4H (607.44), and 1H (584.52).",
         "bias": "Bearish overall across HTF and LTF structure, but constrained near-term by unconfirmed HTF short location due to direct contact with 4H demand (560.80-572.12).",
@@ -1154,8 +1286,8 @@
         "plan_active": true,
         "assessed_at_utc": "2026-11-20T06:13:03Z"
       },
-      "assumption_state": "actionable",
-      "actionable_notified": true,
+      "assumption_state": "waiting",
+      "actionable_notified": false,
       "plan_history": [
         {
           "at_utc": "2026-11-20T06:13:03Z",
